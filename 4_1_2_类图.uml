@@ -1,0 +1,144 @@
+@startuml
+class User {
+    <<Abstract>>
+    +userId : string 
+    +name : string
+    -password : stringstring
+    +contactInfo :string
+    +department : string
+    +login() : string
+    +logout() : string
+}
+
+class StudentsAndTeachers {
+    +borrowHistory : list<BorrowOrder>
+    +scrapHistory : list<ScrapApplication>
+    +borrowAsset(Asset) : BorrowOrder
+    +applyForScrap(Asset, String reason) : ScrapApplication
+}
+
+class MaintenanceWorker {
+    +taskList : list<MaintenanceTask>
+    +executeTask(MaintenanceTask) : MaintenanceTask
+}
+
+class Administrator {
+    +approveBorrowOrder(BorrowOrder) : boolean
+    +approveScrapApplication(ScrapApplication) : boolean
+    +rejectBorrowOrder(BorrowOrder) : boolean
+    +rejectScrapApplication(ScrapApplication) : boolean
+    +createPlan(String planName, String cycle) : MaintenancePlan
+}
+
+class Asset {
+    +assetId : string
+    +name : string
+    +model : string
+    +serialNumber : string
+    +status : AssetStatus
+    +purchasePrice : BigDecimal
+    +purchaseDate : date
+    +supplier : string
+}
+
+class AssetCategory {
+    +categoryId : string
+    +categoryName : string
+    +specificationTemplate : string
+}
+
+class Warehouse {
+    +locationId : string
+    +locationName : string
+    +address : string
+}
+
+class BorrowOrder {
+    +orderId : string
+    +asset : Asset
+    +borrowDate : date
+    +expectedReturnDate : date
+    +actualReturnDate : date
+    +status : OrderStatus
+    +create() : ApprovalProcess
+    +changeStatus(OrderStatus) : boolean
+}
+
+class ApprovalProcess <<Interface>> {
+    +processId : string
+    +currentStep : string
+    +status : ProcessStatus
+    +create() : ApprovalProcess
+    +changeStatus(Status) : boolean
+}
+
+class MaintenancePlan {
+    +planId : string
+    +planName : string
+    +cycle : string
+    +nextExecutionTime : date
+    +addMaintenaceTask(MaintenanceWorker) : MaintenaceTask
+}
+
+class MaintenanceTask {
+    +taskId : string
+    +asset : Asset
+    +scheduledTime : date
+    +actualFinishTime : date
+    +result : string
+    +findings : string
+}
+
+class ScrapApplication {
+    +applicationId : string
+    +asset : Asset
+    +reason : string
+    +applicationDate : date
+    +approvalStatus : ApprovalStatus
+    +create() : ApprovalProcess
+    +changeStatus(AssetStatus) : boolean
+}
+
+class AssetStatus {
+    <<enumeration>>
+    IN_STOCK
+    BORROWED
+    IN_MAINTENANCE
+    SCRAPPED
+}
+
+class OrderStatus {
+    <<enumeration>>
+    PENDING
+    APPROVED
+    REJECTED
+    BORROWED
+    RETURNED
+}
+
+User <|-- StudentsAndTeachers
+User <|-- MaintenanceWorker
+User <|-- Administrator
+
+Asset "1" --o "1" AssetCategory : belongs to
+Asset "1" --> "1" Warehouse : stored in
+
+StudentsAndTeachers "1" --> "0..*" BorrowOrder : places
+BorrowOrder "1" --|> "1..*" Asset : includes
+BorrowOrder  ..|>  ApprovalProcess 
+
+StudentsAndTeachers "1" --> "0..*" ScrapApplication : submits
+ScrapApplication "1" --|> "1" Asset : targets
+ScrapApplication  ..|>  ApprovalProcess 
+
+MaintenanceWorker "1" <-- "1" MaintenancePlan : alignTask
+MaintenancePlan "1" --> "1..*" Asset : schedules for
+MaintenancePlan "1" --> "0..*" AssetCategory : schedules for category
+
+MaintenanceWorker "1" --> "0..*" MaintenanceTask : executes
+MaintenanceTask "1" --|> "1" Asset : performed on
+
+Administrator "1" --> "0..*" MaintenancePlan : creates
+Administrator "1" --> "0..*" BorrowOrder : approves/rejects
+Administrator "1" --> "0..*" ScrapApplication : approves/rejects
+@enduml

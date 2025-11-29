@@ -1,0 +1,31 @@
+@startuml
+actor StudentsAndTeachers as ST
+participant BorrowOrder as BO
+actor Administrator as Admin
+participant Asset as Asset
+
+ST->>BO: 提交借用申请
+activate BO
+BO -> Asset : 检查是否可用
+activate Asset
+Asset --> BO : 返回可用
+deactivate Asset
+BO->>BO: 设置状态为等待
+BO-->>ST: 显示提交成功，正在审核
+deactivate BO
+
+Note over Admin: 审批阶段
+Admin->>BO: 批准申请
+activate BO
+BO->>BO: 设置状态为通过
+BO->>Asset: 设置状态为借出
+activate Asset
+Asset-->>BO: 返回状态已更新
+deactivate Asset
+BO-->>Admin: 审批结束
+deactivate BO
+
+ST->>BO: 查看批准状态
+BO-->>ST: 一通过
+ST->>Asset: 自行去仓库领取
+@enduml

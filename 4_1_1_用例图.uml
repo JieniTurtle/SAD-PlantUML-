@@ -1,0 +1,44 @@
+@startuml
+actor 师生用户 
+actor 管理员
+actor 维修人员
+
+left to right direction
+package 物资管理与借出 {
+ usecase 借用资产
+ usecase 查看资产
+ usecase 管理用户和权限
+ usecase 管理资产
+ usecase 审批物资申请
+ usecase 查看数量
+ usecase 查看状态
+ usecase 入库
+ usecase 预警提醒
+ usecase 提交借用申请
+ usecase 新增种类
+ usecase 执行巡检计划
+ usecase 报修
+}
+
+师生用户 -- (借用资产)
+师生用户 -- (查看资产)
+
+(查看资产) .down.> (查看数量) : <<include>>
+(查看资产) .down.> (查看状态) : <<include>>
+
+(借用资产) .down.> (提交借用申请) : <<include>>
+
+管理员 -- (查看资产)
+管理员 -- (管理用户和权限)
+管理员 -- (管理资产)
+管理员 -- (审批物资申请)
+
+(管理资产) .down.> (入库) : <<include>>
+(管理资产) .down.> (新增种类) : <<include>>
+(管理资产) .down.> (预警提醒) : <<extend>>
+
+维修人员 -- (执行巡检计划) 
+
+(执行巡检计划) .down.> (报修) : <<extend>>
+
+@enduml

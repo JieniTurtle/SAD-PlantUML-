@@ -1,0 +1,35 @@
+@startuml
+actor Administrator as Admin
+actor MaintenanceWorker as MW
+participant MaintenancePlan as MP
+participant MaintenanceTask as MT
+participant Asset as Asset
+
+Admin->>MP: 创建维护计划
+activate MP
+MP-->>Admin: 计划已生成
+deactivate MP
+
+MP->>MW: 分配巡检任务
+activate MP
+MW->>MT: 定期执行巡检计划
+activate MT
+MT->>Asset: 审查对应资产
+activate Asset
+
+alt 巡检正常
+    Asset-->>MT: 状态正常
+    MT->>MT: 记录正常
+else 发现故障
+    Asset-->>MT: 发现异常
+    MT->>MT: 记录异常
+    MT->>Asset: 送修
+    Asset-->>MT: 更新送修状态
+end
+
+MT-->>MW: 结束
+deactivate Asset
+deactivate MT
+MW->>MP: 报告任务完成
+deactivate MP
+@enduml

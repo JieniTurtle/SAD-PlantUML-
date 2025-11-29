@@ -1,0 +1,127 @@
+@startuml
+class FacilityStatus{
+<<enumeration>>
+NORMAL
+IN_MAINTENANCE
+}
+
+class TaskStatus{
+<<enumeration>>
+PENDING_ALLOCATION
+IN_PROGRESS
+COMPLETED
+}
+
+class TaskPriority{
+<<enumeration>>
+HIGH
+MEDIUM
+LOW
+}
+
+class User{
+<Abstract>
++ userId : int
++ name : string
+- password :string
++ contactInfo :string
++ department : string
+
++ login() : Boolean
++ logout() : Boolean
+}
+
+class StudentsAndTeachers{
++ SearchFaciity(string name, FacilityCategory category) : Facility[]
++ ReportForRepair(int facilityId) : void
++ SearchRepairTaskByReporterId(int reporterId) : RepairTask[]
++ Review(int rate, string comment) : void
+}
+
+class MaintenanceWorker{
++ SearchRepairTask() : RepairTask[]
++ RecieveRepairTask(int taskId) : void
++ CompleteRepairTask(int taskId) : void
++ SearchRepairResultByWorkerId(int workerId) : RepairResult[]
+}
+
+User  --|> StudentsAndTeachers
+User  --|> MaintenanceWorker
+
+class FacilityCategory{
++ categoryId : int
++ name : string
+}
+
+class Facility{
++ facilityId : int
++ name : string
++ category : FacilityCatagory
++ location : string
++ status : FacilityStatus(enum)
++ installationTime : Date
+
++ ModifyStatus(FacilityStatus status) : void
+}
+
+Facility o-- FacilityCategory
+StudentsAndTeachers -> Facility
+
+class ReportingCenter{
++ CheckFacilityStatus(int facilityId) : FacilityStatus
++ CreateRepairTask(int facilityId, string description, int reporterId) : void
++ AssignRepairTask() : void
+}
+
+StudentsAndTeachers --> ReportingCenter
+ReportingCenter --> Facility
+
+class RepairTask{
++ taskId : int
++ facilityId : int
++ description : string
++ reporterId : int
++ location : string
++ submissionTime : Date
++ status : TaskStatus(enum)
++ image : string
++ priority : TaskPriority(enum)
+
++ ModifyStatus(TaskStatus status) : void
+}
+
+RepairTask "many" ..> "1..*" Facility
+RepairTask "many" ..> "1..*" StudentsAndTeachers
+ReportingCenter --> RepairTask
+
+class MaintenanceCenter{
++ CreateRepairResult(int taskId, int workerId) : void
++ CreateReview(int rate, string comment) : void
+}
+
+MaintenanceWorker --> MaintenanceCenter
+MaintenanceCenter --> Facility
+
+class RepairResult{
++ resultId : int
++ reporterId : int
++ workerId : int
++ description : string
++ assignedTime : Date
++ completionTime : Date
+}
+
+RepairResult "many" ..> "1..*" MaintenanceWorker
+RepairResult "1*.." <..> "1..*" RepairTask
+MaintenanceCenter --> RepairResult
+
+class Review{
++ reviewId : int
++ rate : int
++ comment : string
++ reviewerId : int
++ reviewTime : Date
+}
+
+Review "many" ..> "1..*" RepairResult
+@enduml

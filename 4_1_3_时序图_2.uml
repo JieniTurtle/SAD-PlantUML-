@@ -1,0 +1,33 @@
+@startuml
+actor StudentsAndTeachers as User
+participant ScrapApplication as SA
+participant Administrator as Admin
+participant Asset as Asset
+
+activate User
+User->>SA: 创建报废申请
+activate SA
+SA->Asset : 确认可用
+activate Asset
+Asset -> SA : 返回状态为可用
+deactivate Asset
+SA->>SA: 设置状态为等待批准
+SA-->>User: 返回申请成功，正在等待
+deactivate SA
+deactivate User
+
+Note over Admin, SA: 审批阶段
+SA->>Admin: 通知新报废申请
+Admin->>SA: 批准申请
+activate SA
+SA->>SA: 设置状态为通过
+SA->>Asset: 设置状态为已报废
+activate Asset
+Asset-->>SA: 返回状态已更新
+deactivate Asset
+SA-->>Admin: 返回批准完成
+deactivate SA
+
+SA->>User: 返回批准
+SA ->> Asset: 指定时间指定地点报废
+@enduml

@@ -1,0 +1,49 @@
+@startuml
+actor StudentsAndTeachers
+StudentsAndTeachers -> Facility : 用户使用并检查设施
+activate StudentsAndTeachers
+StudentsAndTeachers -> ReportingCenter: 发现设施故障并上报
+activate ReportingCenter
+
+ReportingCenter -> Facility : 检查是否此设施已经被报修
+
+alt 设施已被报修
+    ReportingCenter -> StudentsAndTeachers : 返回设施已被报修，请等待维修结果
+else 设施未被报修
+ReportingCenter -> Facility : 修改设施状态
+
+ReportingCenter -> RepairTask : 基于用户描述创建报修单\n并设置优先级
+ReportingCenter -> MaintenanceWorker : 自动为维修人员分配高优先级报修单
+
+actor MaintenanceWorker
+MaintenanceWorker --> RepairTask : 维修人员自行接取报修单
+activate MaintenanceWorker
+activate RepairTask
+|| 45 ||
+
+RepairTask --> MaintenanceWorker
+deactivate RepairTask
+
+ReportingCenter -> RepairTask : 修改报修单状态
+deactivate ReportingCenter
+
+MaintenanceWorker -> MaintenanceCenter : 维修人员完成维修并提交
+activate MaintenanceCenter
+
+MaintenanceCenter -> RepairResult : 创建维修结果
+MaintenanceCenter -> Facility : 修改设施状态
+MaintenanceCenter -> RepairTask : 修改报修单状态
+end
+|| 45 ||
+
+MaintenanceCenter -> StudentsAndTeachers : 为用户返回维修结果
+deactivate MaintenanceCenter
+|| 30 ||
+
+StudentsAndTeachers -> RepairResult : 用户可对维修结果进行评价
+
+MaintenanceWorker -> Review : 维修人员可查看用户对维修结果的评价
+deactivate MaintenanceWorker
+StudentsAndTeachers -> Review : 用户可查看对维修结果的评价
+deactivate StudentsAndTeachers
+@enduml

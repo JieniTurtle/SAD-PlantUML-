@@ -1,0 +1,183 @@
+@startuml 智能调度空间系统类图
+' 基础用户类（抽象）
+class User {
+    <<Abstract>>
+    + userId : String
+    + username : String
+    + department : String
+    + contactInfo : String
+    + login() : String
+    + logout() : String
+}
+
+' 具体用户角色子类
+class StudentsAndTeachers {
+    + studentId : String
+    + grade : String
+    + createReservation(space : Space, timeRange : TimeRange, purpose : String) : ReservationOrder
+    + queryRecommendedSpaces(demand : Demand) : List<Space>
+    + verifyAccess(accessControlId : String) : Boolean
+}
+
+class AdminUser {
+    + permissions : String
+    + approveReservation(order : ReservationOrder) : Boolean
+    + rejectReservation(order : ReservationOrder, reason : String) : Boolean
+    + createMaintenanceTask(space : Space, taskContent : String) : MaintenanceTask
+    + querySystemLogs(timeRange : TimeRange) : List<SystemLog>
+}
+
+' 核心业务类
+class Space {
+    + spaceId : String
+    + spaceName : String
+    + spaceType : String
+    + campus : String
+    + floor : String
+    + capacity : Integer
+    + status : String
+    + facilities : List<String>
+    + applicableRule : ReservationRule
+    + getSpaceInfo() : String
+    + updateFacilities(newFacilities : List<String>) : Boolean
+}
+
+class ReservationOrder {
+    + orderId : String
+    + userId : String
+    + spaceId : String
+    + timeRange : TimeRange
+    + purpose : String
+    + orderStatus : String
+    + accessAuthorizationId : String
+    + submitTime : Date
+    + reviewerId : String
+    + cancelReservation() : Boolean
+    + getOrderDetails() : String
+}
+
+class TimeRange {
+    + startTime : Date
+    + endTime : Date
+    + getDuration() : Long
+    + isOverlapping(other : TimeRange) : Boolean
+}
+
+class Demand {
+    + requiredCapacity : Integer
+    + requiredFacilities : List<String>
+    + preferredTime : TimeRange
+    + campusPreference : String
+    + getDemandSummary() : String
+}
+
+' 系统服务与工具类
+class IntelligentRecommendationEngine {
+    + algorithmType : String
+    + userPreferenceModel : Map
+    + spaceScoreWeight : Map
+    + generateRecommendations(demand : Demand) : List<Space>
+    + filterByRules(spaces : List<Space>, rule : ReservationRule) : List<Space>
+    + updateUserPreference(userId : String, space : Space) : void
+}
+
+class VisualizationService {
+    + dataFormat : String
+    + generateSpaceStatusList(campus : String) : String
+    + generateHeatMapData(campus : String, timeRange : TimeRange) : String
+    + generateSpaceDetailView(spaceId : String) : String
+}
+
+class AccessControlIntegration {
+    + apiUrl : String
+    + authorizationValidity : String
+    + accessLog : List
+    + authorizeAccess(order : ReservationOrder) : String
+    + revokeAccess(accessAuthorizationId : String) : void
+    + verifyAccess(userId : String, accessControlId : String) : Boolean
+}
+
+class SpaceStatusManager {
+    + lastUpdateTime : Date
+    + updateSpaceStatus(spaceId : String, newStatus : String) : void
+    + querySpaceStatus(spaceId : String) : String
+    + querySpacesByCondition(conditions : Map<String, String>) : List<Space>
+}
+
+class ReservationRule {
+    + ruleId : String
+    + maxReservationDuration : Integer
+    + advanceBookingLimit : Integer
+    + applicableSpaceTypes : List<String>
+    + isReservationValid(order : ReservationOrder) : Boolean
+}
+
+class SystemLog {
+    + logId : String
+    + logTime : Date
+    + operationType : String
+    + operatorId : String
+    + details : String
+    + getLogSummary() : String
+}
+
+class MaintenanceTask {
+    + taskId : String
+    + spaceId : String
+    + taskContent : String
+    + taskStatus : String
+    + scheduledTime : Date
+    + finishTime : Date
+    + markAsCompleted() : void
+}
+
+' 枚举类
+class SpaceStatus {
+    <<enumeration>>
+    IDLE
+    OCCUPIED
+    RESERVED
+    MAINTENANCE
+    UNAVAILABLE
+}
+
+class OrderStatus {
+    <<enumeration>>
+    PENDING
+    APPROVED
+    REJECTED
+    ACTIVE
+    COMPLETED
+    CANCELLED
+}
+
+' 类间关系定义
+' 继承关系
+User <|-- StudentsAndTeachers
+User <|-- AdminUser
+
+' 关联关系
+StudentsAndTeachers "1" --> "0..*" ReservationOrder : creates
+StudentsAndTeachers "1" --> "1" IntelligentRecommendationEngine : uses
+StudentsAndTeachers "1" --> "1" AccessControlIntegration : uses
+
+AdminUser "1" --> "0..*" ReservationOrder : approves/rejects
+AdminUser "1" --> "0..*" SystemLog : views
+AdminUser "1" --> "0..*" MaintenanceTask : creates
+
+Space "1" --> "1" ReservationRule : follows
+Space "1" --> "1" SpaceStatus : has
+Space "1" --> "0..*" ReservationOrder : has
+Space "1" --> "0..*" MaintenanceTask : receives
+
+ReservationOrder "1" --> "1" Space : reserves
+ReservationOrder "1" --> "1" TimeRange : covers
+ReservationOrder "1" --> "0..1" AccessControlIntegration : generates
+
+IntelligentRecommendationEngine "1" --> "1" SpaceStatusManager : queries
+IntelligentRecommendationEngine "1" --> "1" ReservationRule : applies
+
+VisualizationService "1" --> "1" SpaceStatusManager : queries
+
+SpaceStatusManager "1" --> "0..*" Space : manages
+@enduml
